@@ -1,0 +1,7 @@
+# Data Directory
+
+This folder is intended for local input data used during analysis.
+
+- Only small sample files are included in the repository.
+- Real or sensitive data is intentionally excluded.
+- Users can place their own text files here for local experimentation.
