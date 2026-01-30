@@ -34,7 +34,7 @@ It demonstrates:
 
 ## 📁 Project Structure
 
-stylometry_lab/
+```stylometry_lab/
 ├── app.py # Main entry point
 ├── utils/ # Supporting modules
 │ ├── processing.py # Text extraction & preprocessing
@@ -44,7 +44,7 @@ stylometry_lab/
 ├── outputs/ # Example outputs & reports
 ├── README.md # This file
 └── requirements.txt # Necessary Python dependencies
-
+```
 
 ---
 
@@ -66,18 +66,5 @@ Prompt structures, evaluation routines, and configuration choices are kept expli
 
 ### Practical Focus
 StyloLab is built as a working prototype close to real-world usage scenarios, prioritizing maintainability and clarity over experimental complexity.
-
-
-## 🛠️ Installation & Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/dimakvlt/StyloLab.git
-cd StyloLab/stylometry_lab```
-
-2. Install dependencies:
-```pip install -r requirements.txt```
-3. Run script
-```python app.py```
 
 
