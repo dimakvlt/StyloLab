@@ -36,13 +36,24 @@ It demonstrates:
 
 ```stylometry_lab/
 ├── app.py # Main entry point
-├── utils/ # Supporting modules
-│ ├── processing.py # Text extraction & preprocessing
-│ ├── evaluation.py # Evaluation helper routines
-│ └── analysis.py # Analytical logic
+├── features.py 
+├── ui.main.py 
+├── utils/ # Supporting modules for text extraction and preprocessing
+│ ├── chunk_selection.py 
+│ ├── craig.py 
+│ ├── delta.py 
+│ ├── pca_utils.py 
+│ ├── plots.py 
+│ ├── processing.py 
+│ ├── report.py 
+│ └── topic_model.py 
 ├── data/ # Optional sample datasets
-├── outputs/ # Example outputs & reports
-├── README.md # This file
+├── analysis/ 
+│ └── pipeline.py 
+├── ui/ 
+│ ├── inputs.py 
+│ └── sidebar.py 
+├── README.md 
 ```
 
 ---
