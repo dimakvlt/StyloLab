@@ -53,11 +53,11 @@ stylometry_lab/
 1. Clone the repository:
 ```bash
 git clone https://github.com/dimakvlt/StyloLab.git
-cd StyloLab/stylometry_lab
+cd StyloLab/stylometry_lab```
 
-2 Install dependencies
-pip install -r requirements.txt
+2. Install dependencies:
+```pip install -r requirements.txt```
 3. Run script
-python app.py
+```python app.py```
 
 
