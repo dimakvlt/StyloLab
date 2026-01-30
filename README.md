@@ -34,3 +34,30 @@ It demonstrates:
 
 ## 📁 Project Structure
 
+stylometry_lab/
+├── app.py # Main entry point
+├── utils/ # Supporting modules
+│ ├── processing.py # Text extraction & preprocessing
+│ ├── evaluation.py # Evaluation helper routines
+│ └── analysis.py # Analytical logic
+├── data/ # Optional sample datasets
+├── outputs/ # Example outputs & reports
+├── README.md # This file
+└── requirements.txt # Necessary Python dependencies
+
+
+---
+
+## 🛠️ Installation & Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/dimakvlt/StyloLab.git
+cd StyloLab/stylometry_lab
+
+2 Install dependencies
+pip install -r requirements.txt
+3. Run script
+python app.py
+
+
