@@ -1,4 +1,4 @@
-# features.py — Feature extraction & comparison (expanded, interpretable)
+# features.py — Feature extraction & comparison 
 import re
 import math
 from collections import Counter
@@ -29,7 +29,7 @@ except Exception:
 
 
 # ----------------------------
-# Tokenization helpers
+# Tokenization 
 # ----------------------------
 
 def safe_sent_tokenize(text):
@@ -450,9 +450,7 @@ def compare_texts(textA, textB, textU):
     print("Weighted distances:", dA, dB)
     print("Explanation:", explanation[:3])
 
-# ------------------------------------------------------------
-# Chunk-level feature stability (single-text analysis)
-# ------------------------------------------------------------
+
 
 
 # ------------------------------------------------------------
