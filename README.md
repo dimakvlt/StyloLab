@@ -55,9 +55,6 @@ StyloLab was designed with clarity, reproducibility, and extensibility in mind. 
 ### Modular Architecture
 The system is structured into clearly separated modules for preprocessing, analysis, and evaluation. This allows individual components to be tested, extended, or replaced without impacting the overall system.
 
-### Transparency over Black-Box Automation
-Instead of relying on opaque end-to-end pipelines, the project emphasizes traceable processing steps and interpretable intermediate results. This makes analytical decisions easier to validate and explain.
-
 ### Hybrid NLP Approach
 Classical NLP techniques are combined with modern LLM-based methods to balance robustness and flexibility. This avoids unnecessary fine-tuning while still enabling context-aware analysis.
 
