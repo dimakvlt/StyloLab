@@ -43,7 +43,6 @@ It demonstrates:
 ├── data/ # Optional sample datasets
 ├── outputs/ # Example outputs & reports
 ├── README.md # This file
-└── requirements.txt # Necessary Python dependencies
 ```
 
 ---
