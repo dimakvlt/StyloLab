@@ -1,22 +1,9 @@
-# utils/chunk_selection.py
-"""
-Chunk selection utilities for Stylometry Lab.
 
-This module defines a generic, extensible layer that decides
-which chunks are passed to downstream analyses.
-
-Design principles:
-- Analysis-agnostic
-- Topic-agnostic (topics are just one selector)
-- Safe defaults (no selection = all chunks)
-"""
 
 from typing import List, Optional
 
 
-# ------------------------------------------------------------
-# Core selector
-# ------------------------------------------------------------
+
 
 def select_chunks(
     chunks: List[list],
@@ -70,9 +57,6 @@ def select_chunks(
     return chunks
 
 
-# ------------------------------------------------------------
-# Diagnostics
-# ------------------------------------------------------------
 
 def selection_summary(
     total_chunks: int,
