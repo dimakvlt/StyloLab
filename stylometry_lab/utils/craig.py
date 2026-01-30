@@ -20,9 +20,7 @@ FUNCTION_WORDS = set([
     'within','without','ye','yet','you','your','yours','yourself','yourselves'
 ])
 
-# -----------------------------------------------------
-# Token cleaning (Craig-correct preprocessing)
-# -----------------------------------------------------
+
 def clean_tokens_for_craig(tokens):
     cleaned = []
     for t in tokens:
@@ -39,9 +37,7 @@ def clean_tokens_for_craig(tokens):
         cleaned.append(t)
     return cleaned
 
-# -----------------------------------------------------
-# Normalisation to ensure all chunks are strings
-# -----------------------------------------------------
+
 def normalize_chunks_to_strings(chunks):
     normalized = []
     for ch in chunks:
@@ -51,9 +47,7 @@ def normalize_chunks_to_strings(chunks):
             normalized.append(str(ch))
     return normalized
 
-# -----------------------------------------------------
-# Segment presence after cleaning
-# -----------------------------------------------------
+
 def compute_segment_presence(chunks):
     """
     Returns Counter: word -> number of segments (chunks) containing the word.
@@ -67,9 +61,7 @@ def compute_segment_presence(chunks):
         pres.update(set(tokens))
     return pres
 
-# -----------------------------------------------------
-# Craig coefficients
-# -----------------------------------------------------
+
 def compute_craig_coefficients(chunksA, chunksB):
     """
     Compute Craig coefficients after Craig-style cleaning.
@@ -96,18 +88,14 @@ def compute_craig_coefficients(chunksA, chunksB):
         coef[w] = k
     return coef
 
-# -----------------------------------------------------
-# Top markers
-# -----------------------------------------------------
+
 def top_k_markers(coef_dict, k=500, min_coef=None):
     items = sorted(coef_dict.items(), key=lambda x: x[1], reverse=True)
     if min_coef is not None:
         items = [it for it in items if it[1] >= min_coef]
     return items[:k]
 
-# -----------------------------------------------------
-# Chunk proportions of marker words
-# -----------------------------------------------------
+
 def chunk_marker_proportions(chunks, marker_set):
     """
     Returns (proportions, absolute_counts)
@@ -129,9 +117,7 @@ def chunk_marker_proportions(chunks, marker_set):
 
     return props, abs_counts
 
-# -----------------------------------------------------
-# Chi-square (used for marker tables)
-# -----------------------------------------------------
+
 def chi2_for_word(freqA, totalA, freqB, totalB):
     obs = np.array([[freqA, totalA - freqA], [freqB, totalB - freqB]], dtype=float)
     row_sums = obs.sum(axis=1)
