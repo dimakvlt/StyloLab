@@ -1,5 +1,3 @@
-# utils/report.py — PDF report generation for Stylometry Lab
-
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 )
@@ -285,7 +283,7 @@ def build_comparative_report(
 
     story.append(_para(verdict, styles))
         # ------------------------------------------------------------
-    # Feature-based explanation (WHY the verdict)
+    # Feature-based explanation 
     # ------------------------------------------------------------
     if explanation:
         story.append(_spacer())
