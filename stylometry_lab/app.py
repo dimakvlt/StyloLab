@@ -1,4 +1,4 @@
-# app.py — Stylometry Lab (Modular, version A)
+
 import streamlit as st
 import logging
 import pandas as pd
@@ -63,7 +63,7 @@ if not logger.handlers:
 
 def log_warning(msg): logger.warning(msg)
 
-# ------------------------------------------------------------
+
 
 # ------------------------------------------------------------
 # PAGE SETUP
@@ -305,7 +305,7 @@ custom_stopwords = set()
 
 
 # ============================================================
-# SINGLE-TEXT INTERNAL ANALYSIS
+# SINGLE-TEXT ANALYSIS
 # ============================================================
 if analysis_mode.startswith("Single"):
 
@@ -621,7 +621,7 @@ if st.session_state.analysis_result is None:
             st.session_state.params["analysis_flags"],
         )
 
-# unpack ONCE, reused on every rerun
+
 locals().update(st.session_state.analysis_result)
 
 # ========================
@@ -861,9 +861,7 @@ if (
 
 
 
-# ------------------------------------------------------------
-# RESULTS
-# ------------------------------------------------------------
+
 # ============================================================
 # CHUNK INSPECTION
 # ============================================================
