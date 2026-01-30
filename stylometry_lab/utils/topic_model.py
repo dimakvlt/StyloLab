@@ -1,13 +1,4 @@
-# utils/topic_model.py
-"""
-Topic modelling utilities for Stylometry Lab.
 
-Design principles:
-- Chunk-based (each chunk = one document)
-- Explicit train vs apply (projection)
-- Explainable (keywords, probabilities)
-- Stateless models (safe for Streamlit session_state)
-"""
 # Topic annotation schema (stable API)
 # {
 #   "topic": int,              # dominant topic id
@@ -21,9 +12,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-# ------------------------------------------------------------
-# Helpers
-# ------------------------------------------------------------
+
 
 def _chunks_to_strings(chunks):
     """
@@ -42,8 +31,7 @@ def _chunks_to_strings(chunks):
     return [" ".join(chunk) for chunk in chunks]
 
 
-# ------------------------------------------------------------
-# Core API
+
 # ------------------------------------------------------------
 
 def preprocess_for_topics(
