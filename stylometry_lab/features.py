@@ -1,8 +1,9 @@
-# features.py — Feature extraction & comparison 
+# features.py — Feature extraction & comparison (expanded, interpretable)
 import re
 import math
 from collections import Counter
 import numpy as np
+import pandas
 
 
 try:
@@ -29,7 +30,7 @@ except Exception:
 
 
 # ----------------------------
-# Tokenization 
+# Tokenization helpers
 # ----------------------------
 
 def safe_sent_tokenize(text):
@@ -335,21 +336,7 @@ def explain_decision(fA, fB, fU):
 
     return explanation[:8]  # keep it readable
 
-def extract_features_by_chunk(chunks):
-    """
-    chunks: list[list[str]]
-    returns: dict[feature -> list of values per chunk]
-    """
-    feature_series = {}
 
-    for chunk in chunks:
-        text = " ".join(chunk)
-        f = extract_features(text)
-        for k, v in f.items():
-            if isinstance(v, (int, float)):
-                feature_series.setdefault(k, []).append(v)
-
-    return feature_series
 
 
 # ----------------------------
@@ -450,7 +437,9 @@ def compare_texts(textA, textB, textU):
     print("Weighted distances:", dA, dB)
     print("Explanation:", explanation[:3])
 
-
+# ------------------------------------------------------------
+# Chunk-level feature stability (single-text analysis)
+# ------------------------------------------------------------
 
 
 # ------------------------------------------------------------
