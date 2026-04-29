@@ -1,4 +1,4 @@
-
+# app.py — Stylometry Lab (Modular, version A)
 import streamlit as st
 import logging
 import pandas as pd
@@ -29,7 +29,8 @@ from utils.topic_model import (
     filter_chunks_by_topic,
     summarize_topics_per_text,
 )
-
+from utils.embeddings import embed_chunks, load_model, mean_similarity
+from utils.embedding_store import save_embeddings, load_embeddings
 import hashlib
 from utils.delta import burrows_delta
 
@@ -63,7 +64,7 @@ if not logger.handlers:
 
 def log_warning(msg): logger.warning(msg)
 
-
+# ------------------------------------------------------------
 
 # ------------------------------------------------------------
 # PAGE SETUP
@@ -129,7 +130,12 @@ textU = get_text(fileU, pastedU)
 from ui.sidebar import render_sidebar
 
 sidebar_params = render_sidebar(analysis_mode)
+analysis_type = sidebar_params.get("analysis_type", "Classical")
+use_embeddings = sidebar_params.get("use_embeddings", False)
 
+save_embedding_name = sidebar_params.get("save_embedding_name")
+load_embedding_name = sidebar_params.get("load_embedding_name")
+save_embeddings_flag = sidebar_params.get("save_embeddings_flag", False)
 sidebar_analysis_flags = sidebar_params["analysis_flags"]
 analysis_flags = sidebar_analysis_flags
 use_topics = analysis_flags["topic_modeling"]
@@ -305,7 +311,7 @@ custom_stopwords = set()
 
 
 # ============================================================
-# SINGLE-TEXT ANALYSIS
+# SINGLE-TEXT INTERNAL ANALYSIS
 # ============================================================
 if analysis_mode.startswith("Single"):
 
@@ -621,9 +627,105 @@ if st.session_state.analysis_result is None:
             st.session_state.params["analysis_flags"],
         )
 
-
+# unpack ONCE, reused on every rerun
 locals().update(st.session_state.analysis_result)
 
+# ============================================================
+# EMBEDDINGS (AI LAYER)
+# ============================================================
+embedding_results = {}
+
+if use_embeddings:
+    from sklearn.decomposition import PCA
+    import matplotlib.pyplot as plt
+    with st.spinner("Computing embeddings..."):
+
+        model = load_model()
+
+        embA = embed_chunks(chunksA_sel, model) if chunksA_sel else None
+        embB = embed_chunks(chunksB_sel, model) if chunksB_sel else None
+        embU = embed_chunks(chunksU_sel, model) if chunksU_sel else None
+
+        # --- similarity
+        sim_A = mean_similarity(embU, embA) if embA is not None else None
+        sim_B = mean_similarity(embU, embB) if embB is not None else None
+
+        embedding_results = {
+            "sim_A": sim_A,
+            "sim_B": sim_B
+        }
+        # ============================================================
+        # EMBEDDING VISUALIZATION (PCA)
+        # ============================================================
+        if embA is not None and embB is not None and embU is not None:
+
+            X = np.vstack([embA, embB, embU])
+            labels = (
+                    ["A"] * len(embA) +
+                    ["B"] * len(embB) +
+                    ["U"] * len(embU)
+            )
+
+            pca = PCA(n_components=2)
+            X2 = pca.fit_transform(X)
+
+            fig, ax = plt.subplots()
+
+            for label in ["A", "B", "U"]:
+                idx = [i for i, l in enumerate(labels) if l == label]
+                ax.scatter(
+                    X2[idx, 0],
+                    X2[idx, 1],
+                    label=label,
+                    alpha=0.7
+                )
+
+            ax.legend()
+            ax.set_title("Embedding PCA (semantic space)")
+            st.pyplot(fig)
+        # --- display
+        st.header("🤖 AI-assisted similarity")
+
+        if sim_A is not None and sim_B is not None:
+            st.markdown(
+                f"**Embedding similarity** — U→A: **{sim_A:.4f}**, U→B: **{sim_B:.4f}**"
+            )
+
+            if sim_A > sim_B:
+                st.success("AI suggests: closer to Author A")
+            elif sim_B > sim_A:
+                st.success("AI suggests: closer to Author B")
+            else:
+                st.info("AI result is inconclusive")
+
+        # ====================================================
+        # SAVE EMBEDDINGS (USER FLOW)
+        # ====================================================
+        if save_embeddings_flag and save_embedding_name:
+
+            save_embeddings(
+                save_embedding_name + "_A",
+                chunksA_sel,
+                embA,
+                {"label": "Author A"}
+            )
+
+            save_embeddings(
+                save_embedding_name + "_B",
+                chunksB_sel,
+                embB,
+                {"label": "Author B"}
+            )
+
+            if embU is not None:
+                save_embeddings(
+                    save_embedding_name + "_U",
+                    chunksU_sel,
+                    embU,
+                    {"label": "Unknown"}
+                )
+
+            st.success(f"Embeddings saved under '{save_embedding_name}'")
 # ========================
 # AUTHorship WITHIN TOPIC
 # ======
@@ -861,7 +963,9 @@ if (
 
 
 
-
+# ------------------------------------------------------------
+# RESULTS
+# ------------------------------------------------------------
 # ============================================================
 # CHUNK INSPECTION
 # ============================================================
