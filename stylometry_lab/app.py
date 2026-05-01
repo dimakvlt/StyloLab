@@ -22,6 +22,7 @@ import tempfile
 import os
 import matplotlib.pyplot as plt
 from utils.chunk_selection import select_chunks, selection_summary
+
 from utils.topic_model import (
     train_topic_model,
     apply_topic_model,
@@ -31,6 +32,11 @@ from utils.topic_model import (
 )
 from utils.embeddings import embed_chunks, load_model, mean_similarity
 from utils.embedding_store import save_embeddings, load_embeddings
+from utils.embeddings_pipeline import (
+    run_embedding_pipeline,
+    compute_centroids,
+    compute_distances
+)
 import hashlib
 from utils.delta import burrows_delta
 
@@ -608,9 +614,9 @@ if analysis_mode.startswith("Single"):
 
 
 
-if st.session_state.analysis_result is None:
+if not st.session_state.analysis_result:
     with st.spinner("Running analysis..."):
-        st.session_state.analysis_result = run_analysis(
+        st.session_state.analysis_result = cached_run_analysis(
             textA, textB, textU,
             tokenizer_choice, chunk_size,
             top_k, min_coef, use_min_coef,
@@ -618,18 +624,25 @@ if st.session_state.analysis_result is None:
             train_A, train_B, train_U,
             apply_A, apply_B, apply_U,
             custom_stopwords_text,
-            exclusion_words,
+            exclusion_words_frozen,
             chunk_mode, selected_topics, min_conf,
             topic_usage,
             use_stability_filter,
             variance_threshold, min_chunk_presence, clump_ratio_threshold,
             pca_marker_limit,
-            st.session_state.params["analysis_flags"],
+            analysis_flags_frozen
         )
 
 # unpack ONCE, reused on every rerun
 locals().update(st.session_state.analysis_result)
+st.write("Chunks A full:", len(chunksA_full))
+st.write("Chunks A selected:", len(chunksA_sel))
 
+st.write("Chunks B full:", len(chunksB_full))
+st.write("Chunks B selected:", len(chunksB_sel))
+
+st.write("Chunks U full:", len(chunksU_full))
+st.write("Chunks U selected:", len(chunksU_sel))
 # ============================================================
 # EMBEDDINGS (AI LAYER)
 # ============================================================
@@ -638,27 +651,62 @@ embedding_results = {}
 if use_embeddings:
     from sklearn.decomposition import PCA
     import matplotlib.pyplot as plt
+    import numpy as np
     with st.spinner("Computing embeddings..."):
 
-        model = load_model()
+        @st.cache_data
+        def cached_embeddings(chunksA, chunksB, chunksU):
+            return run_embedding_pipeline(chunksA, chunksB, chunksU)
 
-        embA = embed_chunks(chunksA_sel, model) if chunksA_sel else None
-        embB = embed_chunks(chunksB_sel, model) if chunksB_sel else None
-        embU = embed_chunks(chunksU_sel, model) if chunksU_sel else None
 
-        # --- similarity
-        sim_A = mean_similarity(embU, embA) if embA is not None else None
-        sim_B = mean_similarity(embU, embB) if embB is not None else None
+        pipeline_out = cached_embeddings(
+            chunksA_sel,
+            chunksB_sel,
+            chunksU_sel
+        )
 
+        embA = pipeline_out["embA"]
+        embB = pipeline_out["embB"]
+        embU = pipeline_out["embU"]
+        sim_A = pipeline_out["sim_A"]
+        sim_B = pipeline_out["sim_B"]
         embedding_results = {
             "sim_A": sim_A,
             "sim_B": sim_B
         }
+        from utils.embedding_store import list_embeddings, load_embeddings
+
         # ============================================================
-        # EMBEDDING VISUALIZATION (PCA)
+        # GLOBAL SEARCH OVER SAVED EMBEDDINGS
+        # ============================================================
+
+        if use_embeddings and embU is not None:
+
+            st.header("📚 Similarity search across saved embeddings")
+
+            results = []
+
+            for name in list_embeddings():
+                try:
+                    stored = load_embeddings(name)
+                    emb_saved = stored["embeddings"]
+
+                    score = mean_similarity(embU, emb_saved)
+
+                    results.append((name, score))
+                except Exception:
+                    continue
+
+            # sort best first
+            results = sorted(results, key=lambda x: x[1], reverse=True)
+
+            # show top results
+            for name, score in results[:10]:
+                st.write(f"**{name}** → similarity: {score:.4f}")
+        # ============================================================
+        # INTERPRETABLE EMBEDDING VISUALIZATION
         # ============================================================
         if embA is not None and embB is not None and embU is not None:
-
             X = np.vstack([embA, embB, embU])
             labels = (
                     ["A"] * len(embA) +
@@ -666,38 +714,112 @@ if use_embeddings:
                     ["U"] * len(embU)
             )
 
+            # PCA
             pca = PCA(n_components=2)
             X2 = pca.fit_transform(X)
 
-            fig, ax = plt.subplots()
+            # Split back
+            XA = X2[:len(embA)]
+            XB = X2[len(embA):len(embA) + len(embB)]
+            XU = X2[len(embA) + len(embB):]
 
-            for label in ["A", "B", "U"]:
-                idx = [i for i, l in enumerate(labels) if l == label]
-                ax.scatter(
-                    X2[idx, 0],
-                    X2[idx, 1],
-                    label=label,
-                    alpha=0.7
-                )
-
-            ax.legend()
-            ax.set_title("Embedding PCA (semantic space)")
-            st.pyplot(fig)
-        # --- display
-        st.header("🤖 AI-assisted similarity")
-
-        if sim_A is not None and sim_B is not None:
-            st.markdown(
-                f"**Embedding similarity** — U→A: **{sim_A:.4f}**, U→B: **{sim_B:.4f}**"
+            # Centroids
+            centroid_A, centroid_B, centroid_U = compute_centroids(
+                embA, embB, embU
             )
 
-            if sim_A > sim_B:
-                st.success("AI suggests: closer to Author A")
-            elif sim_B > sim_A:
-                st.success("AI suggests: closer to Author B")
-            else:
-                st.info("AI result is inconclusive")
+            centroid_A_2d = pca.transform([centroid_A])[0]
+            centroid_B_2d = pca.transform([centroid_B])[0]
+            centroid_U_2d = pca.transform([centroid_U])[0]
 
+            fig, ax = plt.subplots()
+
+            # Scatter
+            ax.scatter(XA[:, 0], XA[:, 1], label="Author A", alpha=0.5)
+            ax.scatter(XB[:, 0], XB[:, 1], label="Author B", alpha=0.5)
+            ax.scatter(XU[:, 0], XU[:, 1], label="Unknown", alpha=0.8)
+
+            # Centroids (BIG markers)
+            ax.scatter(*centroid_A_2d, marker="X", s=200, label="A center")
+            ax.scatter(*centroid_B_2d, marker="X", s=200, label="B center")
+            ax.scatter(*centroid_U_2d, marker="X", s=200, label="U center")
+
+            # Lines from U → A/B
+            ax.plot(
+                [centroid_U_2d[0], centroid_A_2d[0]],
+                [centroid_U_2d[1], centroid_A_2d[1]]
+            )
+
+            ax.plot(
+                [centroid_U_2d[0], centroid_B_2d[0]],
+                [centroid_U_2d[1], centroid_B_2d[1]]
+            )
+
+            ax.legend()
+            ax.set_title("Semantic similarity space (Embeddings)")
+            st.pyplot(fig)
+        dist_A, dist_B = compute_distances(
+            centroid_A,
+            centroid_B,
+            centroid_U
+        )
+
+        st.markdown(f"""
+        ### 🧠 How to read this plot
+
+        - Each dot = a chunk of text
+        - Clusters = consistent writing style/meaning
+        - Big X = average "style center"
+
+        **Distances:**
+        - U → A: {dist_A:.3f}
+        - U → B: {dist_B:.3f}
+
+        👉 The closer the Unknown center is to an author, the more similar the writing.
+        """)
+        # ============================================================
+        # NEAREST CHUNKS (EXPLAINABILITY)
+        # ============================================================
+
+        from utils.embeddings import cosine_similarity_matrix
+
+        if embU is not None and embA is not None:
+            sim_matrix = cosine_similarity_matrix(embU, embA)
+
+            # find best match
+            u_idx, a_idx = np.unravel_index(np.argmax(sim_matrix), sim_matrix.shape)
+
+            st.subheader("🔍 Closest match (Unknown ↔ Author A)")
+
+            st.markdown("**Unknown chunk:**")
+            st.write(" ".join(chunksU_sel[u_idx][:50]))
+
+            st.markdown("**Most similar Author A chunk:**")
+            st.write(" ".join(chunksA_sel[a_idx][:50]))
+
+            st.markdown(f"Similarity: **{sim_matrix[u_idx, a_idx]:.4f}**")
+
+        # ============================================================
+        # NEAREST CHUNKS (EXPLAINABILITY)
+        # ============================================================
+
+        from utils.embeddings import cosine_similarity_matrix
+
+        if embU is not None and embB is not None:
+            sim_matrix = cosine_similarity_matrix(embU, embB)
+
+            # find best match
+            u_idx, b_idx = np.unravel_index(np.argmax(sim_matrix), sim_matrix.shape)
+
+            st.subheader("🔍 Closest match (Unknown ↔ Author B)")
+
+            st.markdown("**Unknown chunk:**")
+            st.write(" ".join(chunksU_sel[u_idx][:50]))
+
+            st.markdown("**Most similar Author B chunk:**")
+            st.write(" ".join(chunksB_sel[b_idx][:50]))
+
+            st.markdown(f"Similarity: **{sim_matrix[u_idx, b_idx]:.4f}**")
         # ====================================================
         # SAVE EMBEDDINGS (USER FLOW)
         # ====================================================
