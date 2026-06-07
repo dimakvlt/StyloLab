@@ -1,0 +1,22 @@
+# StyloLab Development Requirements
+# Install with: pip install -r requirements-dev.txt
+# This is in addition to the main requirements.txt
+
+# === Testing ===
+pytest>=7.4.0              # Testing framework
+pytest-cov>=4.1.0          # Code coverage reporting
+pytest-asyncio>=0.21.0     # Async testing support
+
+# === Code Quality ===
+black>=23.7.0              # Code formatter (enforces consistent style)
+flake8>=6.0.0              # Style guide enforcement
+mypy>=1.4.0                # Static type checker
+pylint>=2.17.0             # Code analysis tool
+isort>=5.12.0              # Import sorting
+
+# === Documentation ===
+sphinx>=7.0.0              # Documentation generator (optional)
+
+# === Debugging ===
+ipython>=8.14.0            # Enhanced Python shell
+ipdb>=0.13.0               # IPython debugger
