@@ -1,0 +1,42 @@
+# StyloLab Requirements
+# Install with: pip install -r requirements.txt
+# For development: pip install -r requirements.txt && pip install pytest pytest-cov black flake8 mypy
+
+# === Core Web Framework ===
+streamlit>=1.28.0          # Web UI framework
+streamlit-option-menu>=0.3.6  # Better sidebar navigation (optional, but recommended)
+
+# === Data & Scientific Computing ===
+numpy>=1.24.0              # Numerical computations
+pandas>=2.0.0              # Data manipulation and analysis
+scipy>=1.10.0              # Scientific computing (used by sklearn)
+
+# === Machine Learning & NLP ===
+scikit-learn>=1.3.0        # PCA, LDA, feature extraction
+sentence-transformers>=2.2.2  # Semantic embeddings
+nltk>=3.8.1                # Natural language processing toolkit
+spacy>=3.6.0               # Advanced NLP (tokenization, POS tagging)
+
+# === Visualization ===
+matplotlib>=3.7.0          # Plotting and visualization
+plotly>=5.14.0             # Interactive plots (optional, for better charts)
+
+# === File Processing ===
+python-docx>=0.8.11        # Reading/writing .docx files
+reportlab>=4.0.4           # PDF generation
+pdfplumber>=0.9.0          # PDF reading and extraction
+
+# === Utilities ===
+python-dotenv>=1.0.0       # Environment variable management (optional)
+
+# === Optional: For faster performance ===
+# numba>=0.57.0            # JIT compilation for performance-critical code
+# torch>=2.0.0             # If using transformer-based models
+
+# === Development Tools (install with: pip install -r requirements-dev.txt) ===
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.7.0
+# flake8>=6.0.0
+# mypy>=1.4.0
+# pylint>=2.17.0
